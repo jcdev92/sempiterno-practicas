@@ -1,6 +1,6 @@
 import { IsIn } from 'class-validator';
 
-export class CreateRolDto {
+export class CreateRoleDto {
   @IsIn(['administrator', 'user'])
   name: string;
 }

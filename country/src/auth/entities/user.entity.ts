@@ -1,3 +1,4 @@
+import { Role } from './role.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
@@ -7,7 +8,6 @@ import {
   ManyToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Role } from './role.entity';
 
 @Entity('user')
 export class User {

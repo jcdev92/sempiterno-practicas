@@ -14,5 +14,5 @@ export class Permission {
     unique: true,
     nullable: false,
   })
-  name: string;
+  title: string;
 }

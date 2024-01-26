@@ -7,7 +7,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { User } from 'src/auth/entities/user.entity';
+import { User } from '../entities';
 import { META_ROLES } from '../decorators/role-protected.decorator';
 
 @Injectable()

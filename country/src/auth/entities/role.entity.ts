@@ -22,7 +22,7 @@ export class Role {
     nullable: false,
     default: 'user',
   })
-  name: string;
+  title: string;
 
   @ManyToMany(() => Permission)
   @JoinTable()
