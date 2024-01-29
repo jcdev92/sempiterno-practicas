@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -23,4 +24,8 @@ export class CreateUserDto {
   @IsString()
   @MinLength(1)
   fullName: string;
+
+  @IsString()
+  @IsOptional()
+  originCountry?: string;
 }

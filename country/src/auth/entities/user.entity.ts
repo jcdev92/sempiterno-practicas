@@ -52,6 +52,12 @@ export class User {
   })
   role: Role[];
 
+  @Column('text', {
+    name: 'origin_country',
+    nullable: true,
+  })
+  originCountry: string;
+
   @BeforeInsert()
   checkFieldsBeforeInsert() {
     this.email = this.email.toLowerCase().trim();
