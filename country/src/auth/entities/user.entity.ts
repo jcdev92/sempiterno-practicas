@@ -39,7 +39,17 @@ export class User {
   isActive: boolean;
 
   @ManyToMany(() => Role)
-  @JoinTable()
+  @JoinTable({
+    name: 'user_role',
+    joinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'role_id',
+      referencedColumnName: 'id',
+    },
+  })
   role: Role[];
 
   @BeforeInsert()
