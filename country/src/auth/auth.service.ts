@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -10,22 +11,35 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities';
 import { JwtPayLoad } from './interfaces';
+import { Country } from 'src/country/entities/country.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Country)
+    private readonly countryRepository: Repository<Country>,
     private readonly jwtService: JwtService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
     try {
       const { password, ...userData } = createUserDto;
+      const { originCountry } = userData;
+      const country = await this.countryRepository.findOneBy({
+        name: originCountry,
+      });
+      if (!country) {
+        throw new NotFoundException(
+          `Country with name: "${originCountry}" not found`,
+        );
+      }
 
       const user = this.userRepository.create({
         ...userData,
         password: bcrypt.hashSync(password, 10),
+        country: country,
       });
 
       await this.userRepository.save(user);

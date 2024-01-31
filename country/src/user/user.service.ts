@@ -3,12 +3,14 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { UpdateUserDto } from '../auth/dto';
 import { User } from 'src/auth/entities';
 import { isEmail, isUUID } from 'class-validator';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Country } from 'src/country/entities/country.entity';
 
 @Injectable()
 export class UserService {
@@ -17,6 +19,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Country)
+    private readonly countryRepository: Repository<Country>,
   ) {}
 
   async findAll(): Promise<User[]> {
@@ -38,18 +42,26 @@ export class UserService {
     }
 
     if (!user) {
-      throw new BadRequestException(
-        `User with term search: "${term}" not found`,
-      );
+      throw new NotFoundException(`User with term search: "${term}" not found`);
     }
 
     return user;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
+    const { originCountry, ...updateData } = updateUserDto;
+    const country = await this.countryRepository.findOneBy({
+      name: originCountry,
+    });
+    if (!country) {
+      throw new NotFoundException(
+        `Country with name: "${originCountry}" not found`,
+      );
+    }
     const user = await this.userRepository.preload({
       id,
-      ...updateUserDto,
+      ...updateData,
+      country: country,
     });
     try {
       await this.userRepository.save(user);
@@ -62,7 +74,7 @@ export class UserService {
   async remove(id: string) {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) {
-      throw new BadRequestException(
+      throw new NotFoundException(
         `User with id: ${id} not found, can't delete`,
       );
     }

@@ -40,12 +40,6 @@ export class User {
   })
   isActive: boolean;
 
-  @Column('text', {
-    name: 'origin_country',
-    nullable: true,
-  })
-  originCountry: string;
-
   @ManyToOne(() => Country, (country) => country.user, {
     nullable: true,
     eager: true,

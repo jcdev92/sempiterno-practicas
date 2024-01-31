@@ -32,7 +32,13 @@ export class Country {
   @BeforeUpdate()
   generateAbbreviation() {
     if (this.name) {
-      const initials = this.name.toUpperCase().match(/\b\w/g)?.join('');
+      // check if this.name have two words
+      if (this.name.split(' ').length > 1) {
+        const initials = this.name.toUpperCase().match(/\b\w/g)?.join('');
+        this.code = initials || '';
+        return;
+      }
+      const initials = this.name.toUpperCase().substring(0, 2);
 
       this.code = initials || '';
     }

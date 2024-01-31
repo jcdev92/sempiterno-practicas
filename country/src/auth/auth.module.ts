@@ -5,8 +5,9 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService, RoleService, PermissionService } from './services';
 import { User, Permission, Role } from './entities';
-import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { AuthController } from './auth.controller';
+import { CountryModule } from 'src/country/country.module';
 
 @Module({
   controllers: [AuthController],
@@ -27,6 +28,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
         };
       },
     }),
+    CountryModule,
   ],
   exports: [TypeOrmModule, JwtStrategy, PassportModule, JwtModule],
 })

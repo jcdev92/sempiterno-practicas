@@ -3,18 +3,23 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateCountryDto } from './dto/create-country.dto';
 import { UpdateCountryDto } from './dto/update-country.dto';
 import { Country } from './entities/country.entity';
 import { Repository } from 'typeorm';
 import { isNumber } from 'class-validator';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class CountryService {
   private readonly logger = new Logger('CountryService');
 
-  constructor(private countryRepository: Repository<Country>) {}
+  constructor(
+    @InjectRepository(Country)
+    private countryRepository: Repository<Country>,
+  ) {}
 
   async create(createCountryDto: CreateCountryDto) {
     try {
@@ -40,7 +45,7 @@ export class CountryService {
     }
 
     if (!country) {
-      throw new BadRequestException(
+      throw new NotFoundException(
         `Country with search term: "${term}" not found`,
       );
     }
@@ -54,7 +59,7 @@ export class CountryService {
       ...updateCountryDto,
     });
     if (!country) {
-      throw new BadRequestException(`Country with id: ${id} not found`);
+      throw new NotFoundException(`Country with id: ${id} not found`);
     }
     try {
       await this.countryRepository.save(country);
@@ -67,7 +72,7 @@ export class CountryService {
   async remove(id: number) {
     const country = await this.countryRepository.findOneBy({ id });
     if (!country) {
-      throw new BadRequestException(`Country with id: ${id} not found`);
+      throw new NotFoundException(`Country with id: ${id} not found`);
     }
     await this.countryRepository.delete(id);
     return {
