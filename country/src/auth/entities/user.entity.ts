@@ -1,3 +1,4 @@
+import { Country } from 'src/country/entities/country.entity';
 import { Role } from './role.entity';
 import {
   BeforeInsert,
@@ -6,6 +7,7 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -38,6 +40,22 @@ export class User {
   })
   isActive: boolean;
 
+  @Column('text', {
+    name: 'origin_country',
+    nullable: true,
+  })
+  originCountry: string;
+
+  @ManyToOne(() => Country, (country) => country.user, {
+    nullable: true,
+    eager: true,
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+    orphanedRowAction: 'delete',
+    cascade: ['insert', 'update'],
+  })
+  country: Country;
+
   @ManyToMany(() => Role)
   @JoinTable({
     name: 'user_role',
@@ -51,12 +69,6 @@ export class User {
     },
   })
   role: Role[];
-
-  @Column('text', {
-    name: 'origin_country',
-    nullable: true,
-  })
-  originCountry: string;
 
   @BeforeInsert()
   checkFieldsBeforeInsert() {

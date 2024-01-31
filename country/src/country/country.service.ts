@@ -1,26 +1,87 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { CreateCountryDto } from './dto/create-country.dto';
 import { UpdateCountryDto } from './dto/update-country.dto';
+import { Country } from './entities/country.entity';
+import { Repository } from 'typeorm';
+import { isNumber } from 'class-validator';
 
 @Injectable()
 export class CountryService {
-  create(createCountryDto: CreateCountryDto) {
-    return 'This action adds a new country';
+  private readonly logger = new Logger('CountryService');
+
+  constructor(private countryRepository: Repository<Country>) {}
+
+  async create(createCountryDto: CreateCountryDto) {
+    try {
+      const country = this.countryRepository.create(createCountryDto);
+      await this.countryRepository.save(country);
+      return country;
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
   }
 
-  findAll() {
-    return `This action returns all country`;
+  async findAll() {
+    return await this.countryRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} country`;
+  async findOne(term: string) {
+    let country: Country;
+
+    if (isNumber(+term)) {
+      country = await this.countryRepository.findOneBy({ id: +term });
+    } else if (isNaN(+term)) {
+      country = await this.countryRepository.findOneBy({ name: term });
+    }
+
+    if (!country) {
+      throw new BadRequestException(
+        `Country with search term: "${term}" not found`,
+      );
+    }
+
+    return country;
   }
 
-  update(id: number, updateCountryDto: UpdateCountryDto) {
-    return `This action updates a #${id} country`;
+  async update(id: number, updateCountryDto: UpdateCountryDto) {
+    const country = await this.countryRepository.preload({
+      id,
+      ...updateCountryDto,
+    });
+    if (!country) {
+      throw new BadRequestException(`Country with id: ${id} not found`);
+    }
+    try {
+      await this.countryRepository.save(country);
+      return country;
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} country`;
+  async remove(id: number) {
+    const country = await this.countryRepository.findOneBy({ id });
+    if (!country) {
+      throw new BadRequestException(`Country with id: ${id} not found`);
+    }
+    await this.countryRepository.delete(id);
+    return {
+      message: `Country with id: ${id} deleted successfully`,
+    };
+  }
+
+  private handleDBExceptions(error: any) {
+    if (error.code === '23505') {
+      throw new BadRequestException(error.detail);
+    }
+    this.logger.error(error);
+    throw new InternalServerErrorException(
+      'Unexpected error!, check server logs',
+    );
   }
 }
