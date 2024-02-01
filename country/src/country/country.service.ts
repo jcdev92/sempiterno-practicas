@@ -11,6 +11,7 @@ import { Country } from './entities/country.entity';
 import { Repository } from 'typeorm';
 import { isNumber } from 'class-validator';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class CountryService {
@@ -31,8 +32,13 @@ export class CountryService {
     }
   }
 
-  async findAll() {
-    return await this.countryRepository.find();
+  async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0 } = paginationDto;
+    const countries = await this.countryRepository.find({
+      take: limit,
+      skip: offset,
+    });
+    return countries;
   }
 
   async findOne(term: string) {

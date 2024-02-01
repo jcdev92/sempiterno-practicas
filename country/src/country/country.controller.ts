@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { CountryService } from './country.service';
 import { CreateCountryDto } from './dto/create-country.dto';
 import { UpdateCountryDto } from './dto/update-country.dto';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('country')
 export class CountryController {
@@ -21,8 +23,8 @@ export class CountryController {
   }
 
   @Get()
-  findAll() {
-    return this.countryService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.countryService.findAll(paginationDto);
   }
 
   @Get(':term')

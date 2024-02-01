@@ -11,6 +11,7 @@ import { isEmail, isUUID } from 'class-validator';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Country } from 'src/country/entities/country.entity';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class UserService {
@@ -23,8 +24,14 @@ export class UserService {
     private readonly countryRepository: Repository<Country>,
   ) {}
 
-  async findAll(): Promise<User[]> {
-    const users = await this.userRepository.find();
+  async findAll(paginationDto: PaginationDto): Promise<User[]> {
+    const { limit = 10, offset = 0 } = paginationDto;
+    const users = await this.userRepository.find({
+      take: limit,
+      skip: offset,
+      where: { isActive: true },
+      relations: ['country'],
+    });
     return users;
   }
 
@@ -42,7 +49,7 @@ export class UserService {
     }
 
     if (!user) {
-      throw new NotFoundException(`User with term search: "${term}" not found`);
+      throw new NotFoundException(`User with search term: "${term}" not found`);
     }
 
     return user;
