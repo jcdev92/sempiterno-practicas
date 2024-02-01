@@ -86,6 +86,13 @@ export class CountryService {
     };
   }
 
+  async removeAll() {
+    await this.countryRepository.delete({});
+    return {
+      message: `All countries deleted successfully`,
+    };
+  }
+
   private handleDBExceptions(error: any) {
     if (error.code === '23505') {
       throw new BadRequestException(error.detail);

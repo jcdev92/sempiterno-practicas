@@ -6,7 +6,7 @@ export class SeedController {
   constructor(private readonly seedService: SeedService) {}
 
   @Post()
-  create() {
-    return this.seedService.create();
+  createSeeds() {
+    return this.seedService.runSeed();
   }
 }
