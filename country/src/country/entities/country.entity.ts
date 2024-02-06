@@ -21,7 +21,6 @@ export class Country {
 
   @Column('text', {
     nullable: false,
-    unique: true,
   })
   code: string;
 
@@ -33,12 +32,19 @@ export class Country {
   generateAbbreviation() {
     if (this.name) {
       // check if this.name have two words
+      const codesArr = [];
       if (this.name.split(' ').length > 1) {
-        const initials = this.name.toUpperCase().match(/\b\w/g)?.join('');
+        const initials = this.name
+          .toUpperCase()
+          .match(/\b\w/g)
+          ?.join('')
+          .substring(0, 3);
         this.code = initials || '';
+        codesArr.push(this.code);
         return;
       }
       const initials = this.name.toUpperCase().substring(0, 2);
+      codesArr.push(initials);
 
       this.code = initials || '';
     }

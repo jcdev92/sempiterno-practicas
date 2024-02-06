@@ -34,10 +34,8 @@ export class CountryService {
 
   async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto;
-    const countries = await this.countryRepository.find({
-      take: limit,
-      skip: offset,
-    });
+    const queryBuilder = this.countryRepository.createQueryBuilder('country');
+    const countries = await queryBuilder.skip(offset).take(limit).getMany();
     return countries;
   }
 
@@ -88,6 +86,9 @@ export class CountryService {
 
   async removeAll() {
     await this.countryRepository.delete({});
+    await this.countryRepository.query(
+      'ALTER SEQUENCE country_id_seq RESTART WITH 1;',
+    );
     return {
       message: `All countries deleted successfully`,
     };

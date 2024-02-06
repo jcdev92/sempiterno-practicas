@@ -9,7 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto, LoginUserDto } from './dto';
-import { User } from './entities';
+import { Role, User } from './entities';
 import { JwtPayLoad } from './interfaces';
 import { Country } from 'src/country/entities/country.entity';
 
@@ -20,6 +20,8 @@ export class AuthService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Country)
     private readonly countryRepository: Repository<Country>,
+    @InjectRepository(Role)
+    private readonly roleRepository: Repository<Role>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -41,6 +43,9 @@ export class AuthService {
         password: bcrypt.hashSync(password, 10),
         country: country,
       });
+
+      const userRole = await this.roleRepository.findOneBy({ title: 'user' });
+      user.role = [userRole];
 
       await this.userRepository.save(user);
       delete user.password;
@@ -65,6 +70,8 @@ export class AuthService {
 
     if (!bcrypt.compareSync(password, user.password))
       throw new BadRequestException('Credentials are not valid (password)');
+
+    delete user.password;
 
     return {
       ...user,

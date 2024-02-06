@@ -26,12 +26,14 @@ export class UserService {
 
   async findAll(paginationDto: PaginationDto): Promise<User[]> {
     const { limit = 10, offset = 0 } = paginationDto;
-    const users = await this.userRepository.find({
-      take: limit,
-      skip: offset,
-      where: { isActive: true },
-      relations: ['country'],
-    });
+
+    const users = await this.userRepository
+      .createQueryBuilder('user')
+      .where('user.isActive = true')
+      .take(limit)
+      .skip(offset)
+      .getMany();
+
     return users;
   }
 
@@ -45,6 +47,36 @@ export class UserService {
         user = await this.userRepository.findOneBy({ email: term });
       } else {
         user = await this.userRepository.findOneBy({ fullName: term });
+      }
+    }
+
+    if (!user) {
+      throw new NotFoundException(`User with search term: "${term}" not found`);
+    }
+
+    return user;
+  }
+
+  async findOneWithRolesAndPermissions(term: string): Promise<User | User[]> {
+    let user: User | Promise<User | User[]>;
+
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.country', 'country')
+      .innerJoinAndSelect('user.role', 'role')
+      .leftJoinAndSelect('role.permission', 'permission');
+
+    if (isUUID(term)) {
+      user = await queryBuilder.where('user.id = :id', { id: term }).getOne();
+    } else if (isNaN(+term)) {
+      if (isEmail(term)) {
+        user = await queryBuilder
+          .where('user.email = :email', { email: term })
+          .getOne();
+      } else {
+        user = await queryBuilder
+          .where('user.fullName = :fullName', { fullName: term })
+          .getOne();
       }
     }
 
