@@ -31,4 +31,8 @@ export class PermissionService implements OnModuleInit {
       }
     }
   }
+
+  async getPermissions() {
+    return await this.permissionRepository.find();
+  }
 }

@@ -1,6 +1,10 @@
-import { IsIn } from 'class-validator';
+import { IsArray, IsOptional, IsString } from 'class-validator';
 
 export class CreateRoleDto {
-  @IsIn(['admin', 'user'])
+  @IsString({ each: true })
   title: string;
+
+  @IsArray()
+  @IsOptional()
+  permissions?: string[];
 }

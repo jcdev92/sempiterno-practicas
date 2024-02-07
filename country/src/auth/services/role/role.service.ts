@@ -1,9 +1,17 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Permission, Role, User } from 'src/auth/entities'; // Ajusta la ruta según la ubicación real
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import { CreateRoleDto } from '../../dto/role-dto/create-role.dto';
+import { UpdateRoleDto } from 'src/auth/dto';
 
 @Injectable()
 export class RoleService implements OnModuleInit {
@@ -90,5 +98,102 @@ export class RoleService implements OnModuleInit {
       });
       await this.userRepository.save(user);
     }
+  }
+
+  async createRole(createRoleDto: CreateRoleDto) {
+    try {
+      const { permissions: permissionTitles, ...roleData } = createRoleDto;
+
+      // Obtener los IDs de los permisos usando los titulos recibidos
+      const permissionEntities = await Promise.all(
+        permissionTitles.map((title) =>
+          this.permissionRepository.findOne({ where: { title } }),
+        ),
+      );
+
+      // Crear el objeto de rol
+      const role = this.roleRepository.create({
+        ...roleData,
+        permission: permissionEntities.filter(Boolean), // Filtrar permisos encontrados
+      });
+
+      // Guardar el rol en la base de datos
+      await this.roleRepository.save(role);
+
+      return role;
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
+  }
+
+  async getRoles() {
+    const queryBuilder = this.roleRepository.createQueryBuilder('role');
+    const roles = await queryBuilder
+      .leftJoinAndSelect('role.permission', 'permission')
+      .getMany();
+    return roles;
+  }
+
+  async findRole(term: string) {
+    let role: Role;
+    if (Number(term)) {
+      role = await this.roleRepository.findOneBy({ id: +term });
+    } else {
+      role = await this.roleRepository.findOneBy({ title: term });
+    }
+    if (!role) {
+      throw new NotFoundException(`Role with term: ${term} not found`);
+    }
+    return role;
+  }
+
+  async updateRole(updateRoleDto: UpdateRoleDto, term: string) {
+    // Buscar el rol a actualizar
+    const role = await this.findRole(term);
+
+    if (role) {
+      try {
+        const { permissions: permissionTitles, ...roleData } = updateRoleDto;
+
+        // Obtener los IDs de los permisos usando los títulos recibidos
+        const permissionEntities = await Promise.all(
+          permissionTitles.map((title) =>
+            this.permissionRepository.findOne({ where: { title } }),
+          ),
+        );
+
+        // Actualizar los datos del rol
+        role.title = roleData.title; // Actualizar el título del rol si es necesario
+        // Asignar los nuevos permisos al rol
+        role.permission = permissionEntities.filter(Boolean);
+
+        // Guardar los cambios en el rol
+        await this.roleRepository.save(role);
+
+        return role;
+      } catch (error) {
+        // Manejar errores
+        this.handleDBErrors(error);
+      }
+    } else {
+      return { message: `Role with term: ${term} not found` };
+    }
+  }
+
+  async deleteRole(id: number) {
+    const role = await this.findRole(id.toString());
+    try {
+      await this.roleRepository.delete(role.id);
+      return { message: 'Role deleted', role: role };
+    } catch (error) {
+      this.handleDBErrors(error);
+    }
+  }
+
+  private handleDBErrors(error: any): never {
+    if (error.code === '23505') {
+      throw new BadRequestException(error.detail);
+    }
+    throw new InternalServerErrorException('Please check server logs');
   }
 }
