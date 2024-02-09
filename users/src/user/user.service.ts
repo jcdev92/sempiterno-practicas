@@ -32,8 +32,12 @@ export class UserService {
       .where('user.isActive = true')
       .take(limit)
       .skip(offset)
+      .leftJoinAndSelect('user.country', 'country')
       .getMany();
 
+    if (!users.length) {
+      throw new NotFoundException(`Users not found`);
+    }
     return users;
   }
 
@@ -89,18 +93,21 @@ export class UserService {
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     const { originCountry, ...updateData } = updateUserDto;
-    const country = await this.countryRepository.findOneBy({
-      name: originCountry,
-    });
-    if (!country) {
-      throw new NotFoundException(
-        `Country with name: "${originCountry}" not found`,
-      );
+
+    if (originCountry) {
+      const country = await this.countryRepository.findOneBy({
+        name: originCountry,
+      });
+      const user = await this.userRepository.preload({
+        id,
+        country,
+      });
+      await this.userRepository.save(user);
     }
+
     const user = await this.userRepository.preload({
       id,
       ...updateData,
-      country: country,
     });
     try {
       await this.userRepository.save(user);

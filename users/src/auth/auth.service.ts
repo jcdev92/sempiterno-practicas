@@ -27,22 +27,27 @@ export class AuthService {
 
   async create(createUserDto: CreateUserDto) {
     try {
-      const { password, ...userData } = createUserDto;
-      const { originCountry } = userData;
-      const country = await this.countryRepository.findOneBy({
-        name: originCountry,
-      });
-      if (!country) {
-        throw new NotFoundException(
-          `Country with name: "${originCountry}" not found`,
-        );
-      }
+      const { password, originCountry, ...userData } = createUserDto;
 
-      const user = this.userRepository.create({
-        ...userData,
-        password: bcrypt.hashSync(password, 10),
-        country: country,
-      });
+      let user: User;
+      if (originCountry) {
+        const country = await this.countryRepository.findOneBy({
+          name: originCountry,
+        });
+
+        if (!country) throw new NotFoundException('Country not found');
+
+        user = this.userRepository.create({
+          ...userData,
+          password: bcrypt.hashSync(password, 10),
+          country: country,
+        });
+      } else {
+        user = this.userRepository.create({
+          ...userData,
+          password: bcrypt.hashSync(password, 10),
+        });
+      }
 
       const userRole = await this.roleRepository.findOneBy({ title: 'user' });
       user.role = [userRole];
