@@ -24,9 +24,26 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+USER RESTFULL API
+  CRUD de usuarios con autenticacion, autorizacion basado en roles y permisos.
+  Ademas tiene una entidad de paises asignables a los usuarios.
 
 ## Installation
+
+INFO:
+```
+  - Por motivos de practicidad y funcionamiento de la api, al iniciar la aplicacion se crean por defecto unos permisos estaticos y unos roles al igual que un usuario admin.
+  - Cabe mencionar que en las variables de entorno se encuentran las respectivas variables de entorno de el usuario admin, los permisos y los roles que se crearan y enlazaran entre si al iniciar el servidor.
+  - Hay rutas que requierer permiso administrador el cual el usuario admin ya tendra en su rol de administrador por defecto... tu mismo indicaras cuales seran las credenciales del admin en el archivo .env como variables de entorno... con las cuales accederas como tal.
+  - Recuerda llenar las variables de entorno en el .env.template y luego renombrarlo a .env para que corran las variables de entorno.
+```
+
+REQUISITOS:
+  - DESARROLLO:
+    ```
+       - Tener instalado postgreSQL en tu computadora. (NOTA: pronto estara dockerizado... mientras tanto en desarrollo usar tu db de postrgeSQL que se encuentre en tu sistema operativo.)
+       - Obviamente tener node js instalado con pnpm. 
+    ```
 
 ```bash
 $ pnpm install
