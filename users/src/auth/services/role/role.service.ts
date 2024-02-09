@@ -6,7 +6,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Permission, Role, User } from 'src/auth/entities'; // Ajusta la ruta según la ubicación real
+import { Permission, Role, User } from 'src/auth/entities';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -48,27 +48,21 @@ export class RoleService implements OnModuleInit {
     }
 
     //? Optimizacion de consultas a las base de datos
-    // Obtener todos los roles de la base de datos y almacenarlos en la propiedad "roles" del servicio.
     this.roles = await this.roleRepository.find();
 
-    // extraer los roles "admin" y "user" qeu seran por defecto los estaticos, desde la propiedad "roles" para luego asignarles sus respectivos permisos.
     const [adminRole, userRole] = this.roles;
 
-    // Obtener todos los permisos de la base de datos y almacenarlos en la propiedad "permissions" del servicio.
     this.permissions = await this.permissionRepository.find();
 
-    // Asignar todos los permisos al rol "admin"
     if (adminRole && this.permissions) {
       adminRole.permission = this.permissions;
       await this.roleRepository.save(adminRole);
     }
 
-    // Obtener el permiso "read" de la propiedad permissions en lugar de hacer consulta a la base de datos
     const readPermission = this.permissions.find(
       (permission) => permission.title === 'read',
     );
 
-    // Asignar el permiso "read" al rol "user"
     if (userRole && readPermission) {
       userRole.permission = [readPermission];
       await this.roleRepository.save(userRole);
@@ -104,20 +98,17 @@ export class RoleService implements OnModuleInit {
     try {
       const { permissions: permissionTitles, ...roleData } = createRoleDto;
 
-      // Obtener los IDs de los permisos usando los titulos recibidos
       const permissionEntities = await Promise.all(
         permissionTitles.map((title) =>
           this.permissionRepository.findOne({ where: { title } }),
         ),
       );
 
-      // Crear el objeto de rol
       const role = this.roleRepository.create({
         ...roleData,
-        permission: permissionEntities.filter(Boolean), // Filtrar permisos encontrados
+        permission: permissionEntities.filter(Boolean),
       });
 
-      // Guardar el rol en la base de datos
       await this.roleRepository.save(role);
 
       return role;
@@ -155,24 +146,20 @@ export class RoleService implements OnModuleInit {
       try {
         const { permissions: permissionTitles, ...roleData } = updateRoleDto;
 
-        // Obtener los IDs de los permisos usando los títulos recibidos
         const permissionEntities = await Promise.all(
           permissionTitles.map((title) =>
             this.permissionRepository.findOne({ where: { title } }),
           ),
         );
 
-        // Actualizar los datos del rol
-        role.title = roleData.title; // Actualizar el título del rol si es necesario
-        // Asignar los nuevos permisos al rol
+        role.title = roleData.title;
+
         role.permission = permissionEntities.filter(Boolean);
 
-        // Guardar los cambios en el rol
         await this.roleRepository.save(role);
 
         return role;
       } catch (error) {
-        // Manejar errores
         this.handleDBErrors(error);
       }
     } else {
