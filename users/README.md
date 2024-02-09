@@ -39,11 +39,21 @@ INFO:
 ```
 
 REQUISITOS:
-  - DESARROLLO:
-    ```
-       - Tener instalado postgreSQL en tu computadora. (NOTA: pronto estara dockerizado... mientras tanto en desarrollo usar tu db de postrgeSQL que se encuentre en tu sistema operativo.)
-       - Obviamente tener node js instalado con pnpm. 
-    ```
+```
+  - Tener instalado postgreSQL en tu computadora. (NOTA: pronto estara dockerizado... mientras tanto en desarrollo usar tu db de postrgeSQL que se encuentre en tu sistema operativo.)
+  - Obviamente tener node js instalado con pnpm. 
+```
+
+DOCUMENTACION OPENAPI / RUTAS:
+```
+  // Development:
+  localhost:3000/api;
+
+  // prouction:
+  // example:
+  https//:www.miapi.com/api;
+
+```
 
 ```bash
 $ pnpm install
