@@ -4,12 +4,12 @@ import { IsArray, IsOptional, IsString } from 'class-validator';
 export class CreateRoleDto {
   @IsString({ each: true })
   @ApiProperty({
-    example: 'ADMIN',
+    example: 'user',
     description: 'Role title',
     uniqueItems: true,
     minLength: 1,
     maxLength: 50,
-    default: 'ADMIN',
+    default: 'user',
     nullable: false,
     required: true,
     type: String,

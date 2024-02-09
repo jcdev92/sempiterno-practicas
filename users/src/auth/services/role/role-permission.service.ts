@@ -14,10 +14,7 @@ import { CreateRoleDto } from '../../dto/role-dto/create-role.dto';
 import { UpdateRoleDto } from 'src/auth/dto';
 
 @Injectable()
-export class RoleService implements OnModuleInit {
-  private roles: Role[];
-  private permissions: Permission[];
-
+export class RolePermissionService implements OnModuleInit {
   constructor(
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
@@ -29,49 +26,61 @@ export class RoleService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
+    await this.createStaticPermissions();
     await this.createStaticRoles();
     await this.createStaticUserAdmin();
   }
 
-  //? crear roles estaticos si no existen en la base de datos al iniciar la aplicacion.
+  private async createStaticPermissions() {
+    const permissions = await this.configService
+      .get('DEFAULT_PERMISSIONS')
+      .split(' ');
+
+    for (const permissionName of permissions) {
+      const permission = await this.permissionRepository.findOne({
+        where: { title: permissionName },
+      });
+
+      if (!permission) {
+        await this.permissionRepository.save({ title: permissionName });
+      }
+    }
+  }
+
   private async createStaticRoles() {
-    // Crear roles "admin" y "user" si no existen
-    const roles = ['admin', 'user'];
+    const roles = await this.configService.get('DEFAULT_ROLES').split(' ');
+    const permissions = await this.permissionRepository.find();
+    const userPermissions = permissions.filter(
+      (permission) => permission.title === 'read',
+    );
     for (const roleName of roles) {
       const role = await this.roleRepository.findOne({
         where: { title: roleName },
       });
 
       if (!role) {
-        await this.roleRepository.save({ title: roleName });
+        if (roleName === 'admin') {
+          const role = this.roleRepository.create({
+            title: roleName,
+            permission: permissions,
+          });
+          await this.roleRepository.save(role);
+        } else if (roleName === 'user') {
+          const role = this.roleRepository.create({
+            title: roleName,
+            permission: userPermissions,
+          });
+          await this.roleRepository.save(role);
+        }
       }
-    }
-
-    //? Optimizacion de consultas a las base de datos
-    this.roles = await this.roleRepository.find();
-
-    const [adminRole, userRole] = this.roles;
-
-    this.permissions = await this.permissionRepository.find();
-
-    if (adminRole && this.permissions) {
-      adminRole.permission = this.permissions;
-      await this.roleRepository.save(adminRole);
-    }
-
-    const readPermission = this.permissions.find(
-      (permission) => permission.title === 'read',
-    );
-
-    if (userRole && readPermission) {
-      userRole.permission = [readPermission];
-      await this.roleRepository.save(userRole);
     }
   }
 
-  //? Crear un usuario administrador al iniciar si no existe
   private async createStaticUserAdmin() {
-    const [adminRole] = this.roles;
+    const adminRole = await this.roleRepository.findOne({
+      where: { title: 'admin' },
+    });
+
     if (!adminRole) {
       console.error("El rol 'admin' no existe.");
       return;
@@ -92,6 +101,11 @@ export class RoleService implements OnModuleInit {
       });
       await this.userRepository.save(user);
     }
+  }
+
+  async getPermissions() {
+    const permissions = await this.permissionRepository.find();
+    return permissions;
   }
 
   async createRole(createRoleDto: CreateRoleDto) {

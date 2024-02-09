@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthService, RoleService, PermissionService } from './services';
+import { AuthService, RolePermissionService } from './services';
 import { User, Permission, Role } from './entities';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthController } from './auth.controller';
@@ -11,7 +11,7 @@ import { CountryModule } from 'src/country/country.module';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, PermissionService, RoleService],
+  providers: [AuthService, JwtStrategy, RolePermissionService],
   imports: [
     ConfigModule,
     TypeOrmModule.forFeature([User, Permission, Role]),

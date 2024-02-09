@@ -16,8 +16,7 @@ import {
 } from './dto';
 import { Auth } from './decorators';
 import { ValidPermissions } from './interfaces';
-import { RoleService } from './services/role/role.service';
-import { PermissionService } from './services';
+import { RolePermissionService } from './services/role/role-permission.service';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -30,8 +29,7 @@ import {
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly roleService: RoleService,
-    private readonly permissionService: PermissionService,
+    private readonly rolePermissionService: RolePermissionService,
   ) {}
 
   @Post('register')
@@ -71,7 +69,7 @@ export class AuthController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @Auth(ValidPermissions.administrator)
   getRoles() {
-    return this.roleService.getRoles();
+    return this.rolePermissionService.getRoles();
   }
 
   @Get('role/:term')
@@ -88,7 +86,7 @@ export class AuthController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @Auth(ValidPermissions.administrator)
   getRolesByTerm(@Param('term') term: string) {
-    return this.roleService.findRole(term);
+    return this.rolePermissionService.findRole(term);
   }
 
   @Post('role')
@@ -105,7 +103,7 @@ export class AuthController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @Auth(ValidPermissions.administrator)
   createRole(@Body() createRoleDto: CreateRoleDto) {
-    return this.roleService.createRole(createRoleDto);
+    return this.rolePermissionService.createRole(createRoleDto);
   }
 
   @Patch('role/:term')
@@ -126,7 +124,7 @@ export class AuthController {
     @Param('term') term: string,
     @Body() updateRoleDto: UpdateRoleDto,
   ) {
-    return this.roleService.updateRole(updateRoleDto, term);
+    return this.rolePermissionService.updateRole(updateRoleDto, term);
   }
 
   @Delete('role/:id')
@@ -142,7 +140,7 @@ export class AuthController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @Auth(ValidPermissions.administrator)
   deleteRole(@Param('id') id: number) {
-    return this.roleService.deleteRole(id);
+    return this.rolePermissionService.deleteRole(id);
   }
 
   @Get('permissions')
@@ -159,6 +157,6 @@ export class AuthController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @Auth(ValidPermissions.administrator)
   getPermissions() {
-    return this.permissionService.getPermissions();
+    return this.rolePermissionService.getPermissions();
   }
 }
