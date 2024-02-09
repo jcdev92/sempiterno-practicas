@@ -39,10 +39,10 @@ INFO:
 
 
 REQUISITOS:
-
-  - Tener instalado postgreSQL en tu computadora. (NOTA: En un futuro proximo esto podra correrse desde un contenedro docker... mientras tanto en desarrollo usar tu db de postrgeSQL que se encuentre en tu sistema operativo.)
-  - Obviamente tener node js instalado.
-  - De preferencia uso pnpm.
+  - En modo desarrollo:
+    - Tener instalado postgreSQL en tu computadora. (NOTA: En un futuro proximo esta api podra correrse desde un contenedor docker... mientras tanto en desarrollo usar tu db de postrgeSQL que se encuentre en tu sistema operativo.)
+    - Obviamente tener node js instalado.
+    - De preferencia uso pnpm.
 
 
 DOCUMENTACION OPENAPI / RUTAS:
