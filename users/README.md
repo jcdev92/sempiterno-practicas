@@ -40,7 +40,8 @@ INFO:
 
 REQUISITOS:
   - En modo desarrollo:
-    - Tener instalado postgreSQL en tu computadora. (NOTA: En un futuro proximo esta api podra correrse desde un contenedor docker... mientras tanto en desarrollo usar tu db de postrgeSQL que se encuentre en tu sistema operativo.)
+    - Tener instalado postgreSQL en tu computadora. Y la base de datos creada.
+    (NOTA: En un futuro proximo esta api podra correrse desde un contenedor docker... mientras tanto en desarrollo usar tu db de postrgeSQL que se encuentre en tu sistema operativo.)
     - Obviamente tener node js instalado.
     - De preferencia uso pnpm.
 
